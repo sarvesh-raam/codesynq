@@ -1,6 +1,7 @@
 # CodeSynq
 
 [![CI](https://github.com/sarvesh-raam/codesynq/actions/workflows/ci.yml/badge.svg)](https://github.com/sarvesh-raam/codesynq/actions/workflows/ci.yml)
+[![Uptime (30 days)](https://img.shields.io/uptimerobot/ratio/30/m804440250-f4e24a8fd04e76e6b6c11cab?label=uptime)](https://codesynq-8177.onrender.com)
 
 A real-time collaborative code editor, like Google Docs for code. Share a link and everyone in the room edits the same files at the same time, sees each other's cursors, and runs the code together.
 
