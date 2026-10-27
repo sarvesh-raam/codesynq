@@ -1,5 +1,7 @@
 # CodeSynq
 
+[![CI](https://github.com/sarvesh-raam/codesynq/actions/workflows/ci.yml/badge.svg)](https://github.com/sarvesh-raam/codesynq/actions/workflows/ci.yml)
+
 A real-time collaborative code editor, like Google Docs for code. Share a link and everyone in the room edits the same files at the same time, sees each other's cursors, and runs the code together.
 
 **Live demo: <https://codesynq-8177.onrender.com>** (free hosting, so the first visit after a quiet spell can take up to a minute to load)
