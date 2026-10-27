@@ -1,0 +1,60 @@
+# Production stack: Caddy (HTTPS) -> app -> Piston. Only Caddy is exposed.
+#
+#   DOMAIN=your.domain docker compose -f docker-compose.prod.yml up -d --build
+#
+# Settings are read from .env next to this file (see deploy/gcp-setup.sh).
+
+services:
+  caddy:
+    image: caddy:2-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMAIN: ${DOMAIN:?Set DOMAIN, e.g. 34-12-56-78.sslip.io}
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      - app
+    restart: unless-stopped
+
+  app:
+    build: .
+    environment:
+      PISTON_URL: http://piston:2000/api/v2
+      ROOM_TTL_MINUTES: ${ROOM_TTL_MINUTES:-120}
+    depends_on:
+      - piston
+    restart: unless-stopped
+
+  piston:
+    image: ghcr.io/engineer-man/piston
+    privileged: true
+    volumes:
+      - piston-packages:/piston/packages
+    tmpfs:
+      - /tmp:exec
+    restart: unless-stopped
+
+  # Installs language runtimes into Piston, then exits. Already installed
+  # packages are skipped, so this is cheap on every later start.
+  runtimes:
+    image: node:22-alpine
+    working_dir: /work
+    command: ["sh", "-c", "node scripts/install-runtimes.mjs $$RUNTIMES"]
+    environment:
+      PISTON_URL: http://piston:2000/api/v2
+      RUNTIMES: ${RUNTIMES:-python node gcc java}
+    volumes:
+      - ./scripts:/work/scripts:ro
+    depends_on:
+      - piston
+    # Piston takes a moment to start; retry until it answers.
+    restart: on-failure
+
+volumes:
+  caddy-data:
+  caddy-config:
+  piston-packages:

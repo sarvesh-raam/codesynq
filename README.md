@@ -39,12 +39,35 @@ The Run button is enabled only for files whose language has an installed runtime
 
 ### Production
 
+`docker-compose.prod.yml` runs the whole stack: Caddy for HTTPS, the app, Piston, and a one-off job that installs language runtimes. Only ports 80 and 443 are exposed.
+
 ```bash
-docker compose up -d --build   # app on :3001 plus Piston
-npm run runtimes
+echo "DOMAIN=code.example.com" > .env
+docker compose -f docker-compose.prod.yml up -d --build
 ```
 
 Without Docker, run `npm run build && npm start`. The server then serves the built client from `client/dist`.
+
+### Deploy free on Google Cloud
+
+Google Cloud's free tier includes one e2-micro VM, which is enough for a small CodeSynq server with a few languages.
+
+1. In the [Google Cloud console](https://console.cloud.google.com/compute/instances), create a VM instance:
+   - **Region:** `us-central1`, `us-west1` or `us-east1` (only these are free)
+   - **Machine type:** `e2-micro`
+   - **Boot disk:** Debian 12, standard persistent disk, 30 GB
+   - **Firewall:** tick *Allow HTTP traffic* and *Allow HTTPS traffic*
+2. Click **SSH** next to the new VM and run:
+
+   ```bash
+   curl -fsSL https://raw.githubusercontent.com/sarvesh-raam/codesynq/main/deploy/gcp-setup.sh | bash
+   ```
+
+   The script adds swap, installs Docker, builds the app and prints your URL, such as `https://34-12-56-78.sslip.io`. [sslip.io](https://sslip.io) maps that name to your VM's IP address, so you don't need a domain. The first build takes 5–10 minutes.
+
+3. To use your own domain, point an A record at the VM and run `DOMAIN=code.example.com bash deploy/gcp-setup.sh` in `~/codesynq`. Install more languages with `RUNTIMES="python node gcc java go rust"`; each one uses disk space, and 1 GB of RAM limits how many programs can run at once.
+
+Run the same command again to deploy the latest code. If you stop and start the VM, its IP address can change; re-run the script to get the new URL.
 
 ## How it works
 
