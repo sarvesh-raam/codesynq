@@ -1,0 +1,26 @@
+{
+  "name": "codesynq",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Real-time collaborative code editor with Operational Transformation, live code execution, cursor presence and multi-file support.",
+  "license": "MIT",
+  "type": "module",
+  "workspaces": [
+    "packages/shared",
+    "server",
+    "client"
+  ],
+  "scripts": {
+    "dev": "concurrently -n server,client -c blue,magenta \"npm run dev -w server\" \"npm run dev -w client\"",
+    "build": "npm run build -w client",
+    "start": "npm run start -w server",
+    "test": "npm test -w packages/shared && npm test -w server",
+    "runtimes": "node scripts/install-runtimes.mjs"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

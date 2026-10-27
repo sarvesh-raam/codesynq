@@ -1,0 +1,26 @@
+services:
+  app:
+    build: .
+    ports:
+      - "3001:3001"
+    environment:
+      PISTON_URL: http://piston:2000/api/v2
+    depends_on:
+      - piston
+    restart: unless-stopped
+
+  # Sandboxed code execution engine. Install language runtimes after the first
+  # start with: npm run runtimes -- python node gcc java   (or --all)
+  piston:
+    image: ghcr.io/engineer-man/piston
+    privileged: true
+    ports:
+      - "2000:2000"
+    volumes:
+      - piston-packages:/piston/packages
+    tmpfs:
+      - /tmp:exec
+    restart: unless-stopped
+
+volumes:
+  piston-packages:
