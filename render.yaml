@@ -1,0 +1,14 @@
+# Render Blueprint: a free web service that runs code through Wandbox.
+# Deploy with https://render.com/deploy?repo=https://github.com/sarvesh-raam/codesynq
+services:
+  - type: web
+    name: codesynq
+    runtime: node
+    plan: free
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "22"

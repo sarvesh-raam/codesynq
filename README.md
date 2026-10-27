@@ -3,7 +3,7 @@
 A real-time collaborative code editor, like Google Docs for code. Share a link and everyone in the room edits the same files at the same time, sees each other's cursors, and runs the code together.
 
 - **Operational Transformation.** A hand-written OT engine with a central server keeps every copy of a document identical, however many people type at once.
-- **Live code execution in 47 languages.** Programs run in a [Piston](https://github.com/engineer-man/piston) sandbox, and stdout, stderr and exit codes are shown to the whole room.
+- **Live code execution in 30+ languages.** Programs run on the free [Wandbox](https://wandbox.org) API, or on a self-hosted [Piston](https://github.com/engineer-man/piston) sandbox with up to 47 languages. stdout, stderr and exit codes are shown to the whole room.
 - **Cursor presence.** Each collaborator's cursor and selection are shown in their own colour with a name label. The file list shows who is in which file.
 - **Multi-file rooms.** Create, rename and delete files together. When you run a file, the other files in the room sit next to it, so imports work.
 - **Monaco editor.** The editor from VS Code, with syntax highlighting chosen by file extension.
@@ -23,7 +23,9 @@ Open <http://localhost:5173>, enter a name and create a room. Open the invite li
 
 ### Code execution
 
-The public Piston API at emkc.org has been allow-list only since 15 February 2026, so to run code you need your own Piston instance:
+By default code runs on [Wandbox](https://wandbox.org), a free public compiler service that needs no API key. It supports about 30 of CodeSynq's languages, including Python, JavaScript, TypeScript, Java, C, C++, C#, Go, Rust, Ruby, PHP and Swift. Because it is shared, a run can take a few seconds or, for Java, up to half a minute.
+
+For faster runs and more languages, use your own Piston instance. (The public Piston API at emkc.org has been allow-list only since 15 February 2026.)
 
 ```bash
 docker compose up -d piston
@@ -35,7 +37,7 @@ npm run runtimes -- --all               # or install everything
 PISTON_URL=http://localhost:2000/api/v2 npm run dev
 ```
 
-The Run button is enabled only for files whose language has an installed runtime. You can also press **Ctrl/Cmd + Enter** in the editor.
+The Run button is enabled only for files whose language the execution service can run. You can also press **Ctrl/Cmd + Enter** in the editor.
 
 ### Production
 
@@ -47,6 +49,14 @@ docker compose -f docker-compose.prod.yml up -d --build
 ```
 
 Without Docker, run `npm run build && npm start`. The server then serves the built client from `client/dist`.
+
+### Deploy free on Render
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/sarvesh-raam/codesynq)
+
+Render's free plan needs only a GitHub login, no card. `render.yaml` builds the client, starts the server and runs code through Wandbox. Every push to `main` redeploys.
+
+On the free plan the service sleeps after 15 minutes without visitors. The next visit takes up to a minute to wake it, and rooms are cleared because they live in memory.
 
 ### Deploy free on Google Cloud
 
@@ -100,7 +110,7 @@ Cursor positions go through the same transforms (`transformIndex`), so a collabo
 
 ```
 packages/shared/   OT engine (TextOperation, OTClient, ServerDocument) + language table
-server/            Express + Socket.IO: rooms, OT server, presence, execution via Piston
+server/            Express + Socket.IO: rooms, OT server, presence, execution via Wandbox or Piston
 client/            React + Vite + Monaco: editor binding, session, UI
 scripts/           install-runtimes.mjs for a self-hosted Piston
 ```
@@ -125,16 +135,19 @@ npm test
 ```
 
 - **OT unit and fuzz tests:** compose and transform correctness, plus convergence of a server and several clients under random interleavings.
-- **Server integration tests:** a real server with headless Socket.IO clients making concurrent edits, presence and file operations, input validation, and code execution against a stand-in Piston.
+- **Server integration tests:** a real server with headless Socket.IO clients making concurrent edits, presence and file operations, input validation, and code execution against a stand-in Piston, plus unit tests for the Wandbox adapter.
 
 ## Configuration
 
 | Variable | Default | |
 | --- | --- | --- |
 | `PORT` | `3001` | HTTP and WebSocket port |
-| `PISTON_URL` | `https://emkc.org/api/v2/piston` | Piston API base URL |
+| `EXECUTOR` | `wandbox`, or `piston` if `PISTON_URL` is set | Which execution service to use |
+| `PISTON_URL` | `http://localhost:2000/api/v2` | Piston API base URL |
 | `PISTON_TOKEN` | | Sent as `Authorization` if set (for an allow-listed public API key) |
-| `RUN_TIMEOUT_MS` | `10000` | Request timeout for execution |
+| `RUN_TIMEOUT_MS` | `10000` | Request timeout for Piston execution |
+| `WANDBOX_URL` | `https://wandbox.org/api` | Wandbox API base URL |
+| `WANDBOX_TIMEOUT_MS` | `60000` | Request timeout for Wandbox |
 | `ROOM_TTL_MINUTES` | `60` | How long an empty room is kept in memory |
 | `MAX_FILES_PER_ROOM` | `30` | |
 | `MAX_USERS_PER_ROOM` | `25` | |
