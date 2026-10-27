@@ -2,6 +2,8 @@
 
 A real-time collaborative code editor, like Google Docs for code. Share a link and everyone in the room edits the same files at the same time, sees each other's cursors, and runs the code together.
 
+**Live demo: <https://codesynq-8177.onrender.com>** (free hosting, so the first visit after a quiet spell can take up to a minute to load)
+
 - **Operational Transformation.** A hand-written OT engine with a central server keeps every copy of a document identical, however many people type at once.
 - **Live code execution in 30+ languages.** Programs run on the free [Wandbox](https://wandbox.org) API, or on a self-hosted [Piston](https://github.com/engineer-man/piston) sandbox with up to 47 languages. stdout, stderr and exit codes are shown to the whole room.
 - **Cursor presence.** Each collaborator's cursor and selection are shown in their own colour with a name label. The file list shows who is in which file.
